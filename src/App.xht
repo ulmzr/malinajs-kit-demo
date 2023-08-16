@@ -1,0 +1,46 @@
+<script>
+   import Router from 'malinajs-kit/router.js';
+   import routes from './routes.js';
+
+   let cmp, params;
+   let router = Router(routes);
+
+   // router.listen();
+   
+   router.onroute(route=>{
+      console.log('route:',route)
+      cmp = route.page;
+      params = route.params;
+   })
+
+   $onMount(router.route(location.pathname))
+   $onDestroy(router.unlisten)
+</script>
+
+<main>
+   <div>
+      <h1>Menu</h1>
+      <div>
+         <a href="/">Home</a>
+         <a href="/about/home/me">About</a>
+         <a href="/about/us/home">AAbout</a>
+         <a href="/notfound">Not Found</a>
+      </div>
+   </div>
+   <div>
+      {#if cmp}
+         <component:cmp {params} />
+      {/if}
+   </div>
+</main>
+
+<style>
+   main {
+      display: grid;
+      grid-template-columns: 15em 1fr;
+   }
+
+   a {
+      display:block
+   }
+</style>

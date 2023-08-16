@@ -1,0 +1,11 @@
+<script>
+	import * as pages from "./pages.js";
+	export let params = {};
+	const page = pages[params.page];
+</script>
+
+{#if page}
+	<component:page />
+{:else}
+{/if}
+ 

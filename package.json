@@ -1,0 +1,17 @@
+{
+   "name": "malinajskit-demo",
+   "version": "0.0.1",
+   "description": "Malina.js kit demo",
+   "scripts": {
+      "dev": "node node_modules/malinajs-kit/app -w",
+      "build": "node node_modules/malinajs/server",
+      "serve": "node node_modules/server -s"
+   },
+   "keywords": [],
+   "author": "Ulmzr",
+   "license": "ISC",
+   "devDependencies": {
+      "malinajs": "^0.7.12",
+      "malinajs-kit": "^1.0.4"
+   }
+}
