@@ -1,14 +1,18 @@
 {
    "name": "malinajskit-demo",
    "version": "0.0.1",
-   "description": "Malina.js kit demo",
+   "author": "Yulmizar",
+   "description": "Malina.js starter.",
    "scripts": {
       "dev": "node node_modules/malinajs-kit/app -w",
       "build": "node node_modules/malinajs/server",
       "serve": "node node_modules/server -s"
    },
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/ulmzr/malinajs-kit-demo"
+   },
    "keywords": [],
-   "author": "Ulmzr",
    "license": "ISC",
    "devDependencies": {
       "malinajs": "^0.7.12",
