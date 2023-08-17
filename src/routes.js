@@ -3,8 +3,8 @@ import Us from "pages/about/us/pageIndex.xht";
 import Baruak from "pages/baruak/pageIndex.xht";
 import Home from "pages/Home.xht";
 export default [
-	{ path: "/", page: Home },
-	{ path: "/baruak/:page", page: Baruak },
-	{ path: "/about/us/:page", page: Us },
-	{ path: "/about/:page", page: About },
-]
+   { path: "/", page: Home },
+   { path: "/baruak/:page", page: Baruak },
+   { path: "/about/:page/:part/:paragraph", page: About },
+   { path: "/about/us/:page", page: Us },
+];

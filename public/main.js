@@ -11,7 +11,6 @@
   var current_cd;
   var destroyResults;
   var $onDestroy = (fn) => fn && current_destroyList.push(fn);
-  var $onMount = (fn) => current_mountList.push(fn);
   var __app_onerror = console.error;
   var isFunction = (fn) => typeof fn == "function";
   var isObject = (d) => typeof d == "object";
@@ -457,73 +456,75 @@
     });
   }
 
-  // node_modules/malinajs-kit/router.js
-  var router_default = (routes = [], e404) => {
-    let cbs = [];
-    let re = (p) => new RegExp("^" + p.replace(/:\w+/g, "(.+)"));
+  // ../router.js
+  function router() {
+    let len = arguments.length - 1;
+    let callback = arguments[len];
+    let routes = arguments[0];
+    let e404 = `404 - PAGE NOT FOUND`;
     let curr;
-    function route(x = location.pathname) {
-      if (curr === x)
+    if (len === 2)
+      e404 = arguments[1];
+    addEventListener("popstate", route);
+    addEventListener("pushstate", route);
+    document.body.addEventListener("click", (ev) => {
+      let href = ev.target.getAttribute("href");
+      if (!href)
         return;
-      if (typeof x !== "string")
-        x = location.pathname;
-      else
-        history.pushState(x, null, x);
-      let result = [];
-      for (let r = 0; r < routes.length; r++) {
-        let route2 = routes[r];
-        let matched, keys, values = [], params = {}, found = x.match(re(route2.path));
-        matched = found && found[0] === found.input;
-        if (matched) {
-          curr = found[0];
-          if (found[1])
-            values = found[1].split("/");
-          keys = route2.path.match(/(:\w+)/g);
-          if (keys) {
-            keys = keys.map((x2) => x2.replace(":", ""));
+      ev.preventDefault();
+      route(href);
+    });
+    route();
+    function route(x, replace) {
+      if (curr == x)
+        return;
+      if (typeof x === "string")
+        history[replace ? "replace" : "pushState"](x, null, x);
+      let params = {};
+      let match = routes.filter((route2) => {
+        let path = route2.path;
+        let keys = path.match(/\/:\w+/g);
+        let re = new RegExp(path.replace(keys?.join(""), "(.*)"));
+        let matched = location.pathname.match(re);
+        let isMatch = matched && matched[0] === matched.input;
+        if (isMatch) {
+          curr = location.pathname;
+          let values = matched[1]?.split("/").slice(1);
+          if (values && keys) {
+            keys = keys?.join("").split("/:").slice(1);
             for (let i = 0; i < values.length; i++) {
               if (i < keys.length)
                 params[keys[i]] = values[i];
               else
-                params[i] = values[i];
+                params[keys[i]] = values[i];
             }
-            result.params = params;
           }
-          result.page = route2.page;
-          break;
         }
-      }
-      if (!result.page) {
-        result.page = e404;
-        result.path = "/";
-      }
-      cbs.map((cb) => cb(result));
-    }
-    function listen() {
-      addEventListener("popstate", route);
-      addEventListener("pushstate", route);
-      document.body.addEventListener("click", (e) => {
-        let link = e.target.getAttribute("href");
-        if (link) {
-          e.preventDefault();
-          route(link);
-        }
+        return isMatch;
       });
+      match = match[match.length - 1];
+      if (match) {
+        callback(match.page, params);
+      } else {
+        if (typeof e404 === "string")
+          console.log(e404);
+        else
+          callback(e404, params);
+      }
     }
-    listen();
     return {
       route,
+      listen() {
+        route(location.pathname);
+      },
       unlisten() {
         removeEventListener("popstate", route);
         removeEventListener("pushstate", route);
         routes = [];
-      },
-      onroute(cb) {
-        cbs.push(cb);
-        return () => cbs.splice(cbs.indexOf(cb), 1);
       }
     };
-  };
+  }
+  var router_default = router;
 
   // src/pages/about/pages.js
   var pages_exports = {};
@@ -534,8 +535,8 @@
   // src/pages/about/+home.xht
   var home_default = ($option = {}) => {
     {
-      const $parentElement = htmlToFragment(`<h1 class="m26ebma">About</h1><h3>About about</h3>`, 1);
-      addStyles("m26ebma", `h1.m26ebma{color:green}`);
+      const $parentElement = htmlToFragment(`<h1 class="mskqcsq">About</h1><h3>About about</h3>`, 1);
+      addStyles("mskqcsq", `h1.mskqcsq{color:green}`);
       return { $dom: $parentElement };
     }
   };
@@ -667,8 +668,8 @@
   // src/pages/Home.xht
   var Home_default = ($option = {}) => {
     {
-      const $parentElement = htmlToFragment(`<h1 class="mf03vim">Home</h1><h3>About home</h3>`, 1);
-      addStyles("mf03vim", `h1.mf03vim{color:red}`);
+      const $parentElement = htmlToFragment(`<h1 class="mly95xe">Home</h1><h3>About home</h3>`, 1);
+      addStyles("mly95xe", `h1.mly95xe{color:red}`);
       return { $dom: $parentElement };
     }
   };
@@ -677,9 +678,17 @@
   var routes_default = [
     { path: "/", page: Home_default },
     { path: "/baruak/:page", page: pageIndex_default3 },
-    { path: "/about/us/:page", page: pageIndex_default2 },
-    { path: "/about/:page", page: pageIndex_default }
+    { path: "/about/:page/:part/:paragraph", page: pageIndex_default },
+    { path: "/about/us/:page", page: pageIndex_default2 }
   ];
+
+  // src/cmp/E404.xht
+  var E404_default = ($option = {}) => {
+    {
+      const $parentElement = htmlToFragment(`<center><h1>404</h1><h6>PAGE NOT FOUND</h6></center>`, 1);
+      return { $dom: $parentElement };
+    }
+  };
 
   // src/App.xht
   var App_default = makeComponent(($option) => {
@@ -687,17 +696,14 @@
     const $context2 = $context;
     autoSubscribe(routes_default);
     let cmp, params;
-    let router = router_default(routes_default);
-    router.onroute((route) => {
+    let router2 = router_default(routes_default, E404_default, (page, opts) => {
       $$apply();
-      console.log("route:", route);
-      cmp = route.page;
-      params = route.params;
-    });
-    $onMount(router.route(location.pathname));
-    $onDestroy(router.unlisten);
+      cmp = page;
+      params = opts;
+    }).listen();
+    $onDestroy(() => router2.unlisten());
     {
-      const $parentElement = htmlToFragment(`<main class="mdhrdww"><div><h1>Menu</h1><div><a href="/" class="mdhrdww">Home</a> <a href="/about/home/me" class="mdhrdww">About</a> <a href="/about/us/home" class="mdhrdww">AAbout</a> <a href="/notfound" class="mdhrdww">Not Found</a></div></div><div></div></main>`, 1);
+      const $parentElement = htmlToFragment(`<main class="mx9zpuf"><div><h1>Menu</h1><div><a href="/" class="mx9zpuf">Home</a> <a href="/about/home/twelve/4" class="mx9zpuf">About</a> <a href="/about/us/home" class="mx9zpuf">AAbout</a> <a href="/notfound" class="mx9zpuf">Not Found</a></div></div><div></div></main>`, 1);
       let [el1] = refer($parentElement, ">1.");
       ifBlock(
         el1,
@@ -714,7 +720,7 @@
         })],
         true
       );
-      addStyles("mdhrdww", `main.mdhrdww{display:grid;grid-template-columns:15em 1fr}a.mdhrdww{display:block}`);
+      addStyles("mx9zpuf", `main.mx9zpuf{display:grid;grid-template-columns:15em 1fr}a.mx9zpuf{display:block}`);
       return $parentElement;
     }
   });

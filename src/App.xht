@@ -1,20 +1,19 @@
 <script>
    import Router from 'malinajs-kit/router.js';
+   // import Router from '../../router.js';
    import routes from './routes.js';
 
+   import { E404 } from './cmp'
+
    let cmp, params;
-   let router = Router(routes);
 
-   // router.listen();
-   
-   router.onroute(route=>{
-      console.log('route:',route)
-      cmp = route.page;
-      params = route.params;
-   })
+   let router = Router(routes, E404, (page, opts) => {
+      cmp = page
+      params = opts
+   }).listen()
 
-   $onMount(router.route(location.pathname))
-   $onDestroy(router.unlisten)
+   $onDestroy(()=>router.unlisten())
+
 </script>
 
 <main>
@@ -22,7 +21,7 @@
       <h1>Menu</h1>
       <div>
          <a href="/">Home</a>
-         <a href="/about/home/me">About</a>
+         <a href="/about/home/twelve/4">About</a>
          <a href="/about/us/home">AAbout</a>
          <a href="/notfound">Not Found</a>
       </div>

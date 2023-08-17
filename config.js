@@ -2,5 +2,5 @@ module.exports = {
    outdir: "public",
    port: 8080,
    esbuild: {},
-   autoroute: true,
+   autoroute: false,
 };
